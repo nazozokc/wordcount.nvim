@@ -6,6 +6,16 @@ local function close(win) if win and vim.api.nvim_win_is_valid(win) then vim.api
 
 function M.close(winid) close(M.windows[winid]); M.windows[winid] = nil end
 
+function M.close_all()
+  for winid in pairs(M.windows) do M.close(winid) end
+end
+
+function M.remove_counter(counter)
+  for winid, win in pairs(M.windows) do
+    if win == counter then M.windows[winid] = nil end
+  end
+end
+
 local function overlaps(a, b)
   return a.row < b.row + b.height and b.row < a.row + a.height
     and a.col < b.col + b.width and b.col < a.col + a.width

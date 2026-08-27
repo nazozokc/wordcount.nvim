@@ -21,7 +21,7 @@ local function schedule()
 end
 function M.refresh() refresh_now() end
 function M.enable() M.enabled = true; refresh_now() end
-function M.disable() M.enabled = false; display.close(vim.api.nvim_get_current_win()) end
+function M.disable() M.enabled = false; display.close_all() end
 function M.toggle() if M.enabled then M.disable() else M.enable() end end
 function M.details()
   local s = count.count(current_lines()); local lines = { "WordCount", "", "総文字数: " .. s.total, "日本語: " .. s.japanese, "英字: " .. s.english, "数字: " .. s.digits, "空白: " .. s.whitespace, "記号・句読点: " .. s.symbols, "その他: " .. s.other, "行数: " .. s.lines, "単語数: " .. s.words }; local width = 0
@@ -32,6 +32,7 @@ function M.details()
 end
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", M.config, opts or {}); vim.api.nvim_create_user_command("WordCount", M.details, {}); vim.api.nvim_create_user_command("WordCountToggle", M.toggle, {}); vim.api.nvim_create_user_command("WordCountRefresh", M.refresh, {})
-  local group = vim.api.nvim_create_augroup("WordCount", { clear = true }); vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, { group = group, callback = schedule }); vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "WinScrolled", "VimResized" }, { group = group, callback = refresh_now }); vim.api.nvim_create_autocmd("WinClosed", { group = group, callback = function(args) if not display.is_counter(tonumber(args.match)) then vim.schedule(refresh_now) end end }); if M.config.enabled then M.enable() end
+  display.close_all()
+  local group = vim.api.nvim_create_augroup("WordCount", { clear = true }); vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, { group = group, callback = schedule }); vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "WinScrolled", "VimResized" }, { group = group, callback = refresh_now }); vim.api.nvim_create_autocmd("WinClosed", { group = group, callback = function(args) local win = tonumber(args.match); if display.is_counter(win) then display.remove_counter(win) else vim.schedule(refresh_now) end end }); if M.config.enabled then M.enable() end
 end
 return M
