@@ -1,0 +1,2 @@
+# wordcount.nvim
+neovim plugin
