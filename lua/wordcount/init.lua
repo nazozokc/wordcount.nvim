@@ -24,6 +24,6 @@ function M.details()
 end
 function M.setup(opts)
   M.config = vim.tbl_deep_extend("force", M.config, opts or {}); vim.api.nvim_create_user_command("WordCount", M.details, {}); vim.api.nvim_create_user_command("WordCountToggle", M.toggle, {}); vim.api.nvim_create_user_command("WordCountRefresh", M.refresh, {})
-  local group = vim.api.nvim_create_augroup("WordCount", { clear = true }); vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, { group = group, callback = schedule }); vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "WinScrolled", "VimResized" }, { group = group, callback = refresh_now }); if M.config.enabled then M.enable() end
+  local group = vim.api.nvim_create_augroup("WordCount", { clear = true }); vim.api.nvim_create_autocmd({ "TextChanged", "TextChangedI" }, { group = group, callback = schedule }); vim.api.nvim_create_autocmd({ "BufEnter", "WinEnter", "WinScrolled", "VimResized" }, { group = group, callback = refresh_now }); vim.api.nvim_create_autocmd("WinClosed", { group = group, callback = function(args) if not display.is_counter(tonumber(args.match)) then vim.schedule(refresh_now) end end }); if M.config.enabled then M.enable() end
 end
 return M
