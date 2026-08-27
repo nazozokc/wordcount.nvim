@@ -48,12 +48,13 @@ function M.show(winid, text, position)
   local width = math.min(math.max(1, vim.fn.strdisplaywidth(text)), vim.api.nvim_win_get_width(winid))
   local height = vim.api.nvim_win_get_height(winid); local win_width = vim.api.nvim_win_get_width(winid)
   local occupied = occupied_windows(winid)
-  local selected = candidate(position, width, 1, height, win_width)
   local alternatives = { position }
   for _, alternative in ipairs(position_order) do
     if alternative ~= position then alternatives[#alternatives + 1] = alternative end
   end
   local target_row, target_col = unpack(vim.api.nvim_win_get_position(winid))
+  local initial = candidate(position, width, 1, height, win_width)
+  local selected = { row = target_row + initial.row, col = target_col + initial.col }
   for _, alternative in ipairs(alternatives) do
     local point = candidate(alternative, width, 1, height, win_width)
     local rect = { row = target_row + point.row, col = target_col + point.col, width = width, height = 1 }
@@ -61,10 +62,15 @@ function M.show(winid, text, position)
     for _, other in ipairs(occupied) do
       if overlaps(rect, other) then blocked = true; break end
     end
-    if not blocked then selected = point; break end
+    if not blocked then
+      selected = { row = rect.row, col = rect.col }
+      break
+    end
   end
   local buf = vim.api.nvim_create_buf(false, true); vim.api.nvim_buf_set_lines(buf, 0, -1, false, { text })
-  local win = vim.api.nvim_open_win(buf, false, { relative = "win", win = winid, row = selected.row, col = selected.col, width = width, height = 1, style = "minimal", focusable = false })
+  -- Use editor-relative coordinates so the counter stays aligned with the
+  -- target window even when Neovim has a statusline or a floating window.
+  local win = vim.api.nvim_open_win(buf, false, { relative = "editor", row = selected.row, col = selected.col, width = width, height = 1, style = "minimal", focusable = false })
   vim.api.nvim_set_option_value("winhl", "Normal:Normal", { win = win }); M.windows[winid] = win
 end
 
