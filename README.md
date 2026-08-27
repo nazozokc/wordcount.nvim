@@ -40,10 +40,15 @@ require("wordcount").setup({
   position = "top_right", -- top_left / top_right / bottom_left / bottom_right
   debounce_ms = 100,
   format = "Characters: %d",
+  markdown = {
+    include_frontmatter = true,
+  },
 })
 ```
 
 When no configuration is provided, the counter is displayed in the top-right corner as `Characters: N`.
+
+For Markdown buffers, set `markdown.include_frontmatter = false` to exclude YAML (`---`) or TOML (`+++`) front matter from all counts. It defaults to `true` for backward compatibility.
 
 ## Commands
 

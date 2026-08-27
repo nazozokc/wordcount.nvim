@@ -1,5 +1,27 @@
 local M = {}
 
+local function frontmatter_end(lines, delimiter)
+  for index = 2, #lines do
+    if lines[index] == delimiter or (delimiter == "---" and lines[index] == "...") then
+      return index
+    end
+  end
+end
+
+function M.remove_frontmatter(lines)
+  local delimiter = lines[1] == "---" and "---" or lines[1] == "+++" and "+++"
+  if not delimiter then return lines end
+
+  local ending = frontmatter_end(lines, delimiter)
+  if not ending then return lines end
+
+  local content = {}
+  for index = ending + 1, #lines do
+    content[#content + 1] = lines[index]
+  end
+  return content
+end
+
 local function in_range(cp, first, last) return cp >= first and cp <= last end
 
 local function classify(cp)
