@@ -53,7 +53,11 @@ end
 local function refresh_buffer(buf)
   if not M.enabled then return end
   for _, winid in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-    if vim.api.nvim_win_get_buf(winid) == buf then refresh_window(winid) end
+    -- refresh_window may close a counter float, and that float is listed here
+    -- too, so windows can vanish in the middle of this loop.
+    if vim.api.nvim_win_is_valid(winid) and vim.api.nvim_win_get_buf(winid) == buf then
+      refresh_window(winid)
+    end
   end
 end
 
